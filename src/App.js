@@ -95,14 +95,6 @@ export default function App() {
         disabled={loading}
       />
 
-      <button
-        onClick={() => fetchYoutubeUrl(input)}
-        disabled={loading}
-        style={{ marginTop: '1rem', padding: '0.5rem 1rem', fontSize: '1rem' }}
-      >
-        {loading ? 'Lade...' : 'Senden'}
-      </button>
-
       {youtubeUrl && (
         <div style={{ marginTop: '2rem' }}>
           <strong>YouTube URL:</strong>
