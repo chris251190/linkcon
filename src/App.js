@@ -24,8 +24,13 @@ export default function App() {
       const data = await response.json();
       if (data.youtube_url) {
         setYoutubeUrl(data.youtube_url);
-        await navigator.clipboard.writeText(data.youtube_url);
-        alert("YouTube-Link kopiert!");
+        try {
+          await navigator.clipboard.writeText(data.youtube_url);
+          alert("YouTube-Link automatisch kopiert!");
+        } catch {
+          // still allow manual copy
+          console.warn("Automatisches Kopieren fehlgeschlagen.");
+        }
       } else {
         setError('Keine YouTube-URL gefunden.');
       }
@@ -52,6 +57,13 @@ export default function App() {
     } catch (err) {
       alert("Zugriff auf die Zwischenablage nicht erlaubt.");
       console.error(err);
+    }
+  };
+
+  const copyToClipboard = () => {
+    if (youtubeUrl) {
+      navigator.clipboard.writeText(youtubeUrl);
+      alert('YouTube-Link kopiert!');
     }
   };
 
@@ -95,6 +107,9 @@ export default function App() {
         <div style={{ marginTop: '2rem' }}>
           <strong>YouTube URL:</strong>
           <p style={{ wordBreak: 'break-word' }}>{youtubeUrl}</p>
+          <button onClick={copyToClipboard} style={{ padding: '0.4rem 0.8rem', marginTop: '0.5rem' }}>
+            Manuell kopieren
+          </button>
         </div>
       )}
 
