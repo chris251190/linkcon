@@ -6,14 +6,14 @@ export default function App() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const fetchYoutubeUrl = async () => {
-    if (!input.trim()) return;
+  const fetchYoutubeUrl = async (url) => {
+    if (!url.trim()) return;
     setLoading(true);
     setYoutubeUrl(null);
     setError(null);
 
     try {
-      const params = new URLSearchParams({ spotify_url: input.trim() });
+      const params = new URLSearchParams({ spotify_url: url.trim() });
       const response = await fetch(`https://de9495e9-8d54-4d59-8b4b-edcc6d8b2328-00-asv9pts4xy3v.riker.replit.dev/track-info?${params.toString()}`);
       
       if (!response.ok) {
@@ -24,6 +24,8 @@ export default function App() {
       const data = await response.json();
       if (data.youtube_url) {
         setYoutubeUrl(data.youtube_url);
+        await navigator.clipboard.writeText(data.youtube_url);
+        alert("YouTube-Link kopiert!");
       } else {
         setError('Keine YouTube-URL gefunden.');
       }
@@ -34,16 +36,44 @@ export default function App() {
     }
   };
 
-  const copyToClipboard = () => {
-    if (youtubeUrl) {
-      navigator.clipboard.writeText(youtubeUrl);
-      alert('URL kopiert!');
+  const handleClipboardImport = async () => {
+    try {
+      const text = await navigator.clipboard.readText();
+      if (!text) {
+        alert("Die Zwischenablage ist leer.");
+        return;
+      }
+      setInput(text);
+      if (text.includes("spotify.com/track")) {
+        fetchYoutubeUrl(text);
+      } else {
+        alert("Kein gültiger Spotify-Link in der Zwischenablage.");
+      }
+    } catch (err) {
+      alert("Zugriff auf die Zwischenablage nicht erlaubt.");
+      console.error(err);
     }
   };
 
   return (
     <div style={{ maxWidth: 400, margin: '2rem auto', fontFamily: 'Arial, sans-serif' }}>
       <h1>LinkCon</h1>
+
+      <button
+        onClick={handleClipboardImport}
+        disabled={loading}
+        style={{
+          marginBottom: '1rem',
+          padding: '0.4rem 0.8rem',
+          fontSize: '0.95rem',
+          backgroundColor: '#e0e0e0',
+          border: '1px solid #ccc',
+          cursor: 'pointer'
+        }}
+      >
+        Aus Zwischenablage einfügen
+      </button>
+
       <input
         type="text"
         placeholder="Gib deine URL ein"
@@ -52,8 +82,9 @@ export default function App() {
         style={{ width: '100%', padding: '0.5rem', fontSize: '1rem' }}
         disabled={loading}
       />
+
       <button
-        onClick={fetchYoutubeUrl}
+        onClick={() => fetchYoutubeUrl(input)}
         disabled={loading}
         style={{ marginTop: '1rem', padding: '0.5rem 1rem', fontSize: '1rem' }}
       >
@@ -64,9 +95,6 @@ export default function App() {
         <div style={{ marginTop: '2rem' }}>
           <strong>YouTube URL:</strong>
           <p style={{ wordBreak: 'break-word' }}>{youtubeUrl}</p>
-          <button onClick={copyToClipboard} style={{ padding: '0.4rem 0.8rem' }}>
-            Kopieren
-          </button>
         </div>
       )}
 
